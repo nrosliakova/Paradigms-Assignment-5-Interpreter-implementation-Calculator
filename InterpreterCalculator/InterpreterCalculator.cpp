@@ -88,7 +88,8 @@ queue<string> convert_to_postfix(vector<string> tokens) {
         else if (string("(^!").find(tokens[i]) != string::npos) {
             oper.push(tokens[i]);
         }
-        else if (oper.size() != 0 && oper.top() == ")") {
+        //else if (oper.size() != 0 && oper.top() == ")") {
+        else if (oper.size() != 0 && tokens[i] == ")") {
             //if (oper.size() != 0) {
             while (oper.size() > 0 && oper.top() != "(") {
                 operands.push(oper.top());
