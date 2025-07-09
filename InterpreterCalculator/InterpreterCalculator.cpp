@@ -35,23 +35,33 @@ int main()
 }
 
 vector<string> tokenization(string equation) {
-    string numbers = "1234567890";
+    string numbers = "1234567890.";
     string operators = "!()+-*/^";
     stringstream num;
     vector<string> tokens;
-    for (auto symb : equation) {
-        if (numbers.find(symb) != string::npos) {
-            num << symb;
+    for (int i = 0; i < equation.length(); i++) {
+        if (numbers.find(equation[i]) != string::npos) {
+            if (equation[i] == '.') {
+                if (num.str().length() != 0) num << equation[i];
+                else {
+                    cerr << "Error in the input at symbol " << i << "!";
+                    exit(0);
         }
-        else if (operators.find(symb) != string::npos) {
+            }
+            else num << equation[i];
+        }
+        else if (operators.find(equation[i]) != string::npos) {
+            if (i == 0 || operators.find(equation[i - 1]) != string::npos) {
+                cerr << "Error in the input at symbol " << i << "!";
+                exit(0);
+            }
             if (num.str().length() != 0) {
                 tokens.push_back(num.str());
                 num.str("");
             }
-            tokens.push_back(string{ symb });
+            tokens.push_back(string{ equation[i] });
         }
-        else if (symb == ' ') {
-            if (num.str().length() != 0) {
+        else if (equation[i] == ' ') {
                 tokens.push_back(num.str());
                 num.str("");
             }
