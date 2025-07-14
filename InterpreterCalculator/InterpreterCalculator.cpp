@@ -5,6 +5,7 @@
 #include <sstream>
 #include <stack>
 #include <queue>
+#include <map>
 
 using namespace std;
 
@@ -12,12 +13,21 @@ vector<string> tokenization(string equation);
 queue<string> convert_to_postfix(vector<string> tokens);
 double calculate(queue<string> operands);
 vector<string> get_parameters(string s, int& last_par_pos);
+map<string, string> variables;
 auto solve = [=](string equation) {return calculate(convert_to_postfix(tokenization(equation)));};
 
 int main()
 {
     string equation;
     getline(cin, equation);
+    equation.erase(remove(equation.begin(), equation.end(), ' '), equation.end());
+    while (equation.find("var") == 0) {
+        string v = equation.substr(3, equation.find('=') - 3);
+        string value = to_string(solve(equation.substr(equation.find('=') + 1)));
+        variables[v] = value;
+        getline(cin, equation);
+        equation.erase(remove(equation.begin(), equation.end(), ' '), equation.end());
+    }
     cout << "result = " << solve(equation);
     //vector<string> tokens = tokenization(equation);
     //cout << "Tokens: ";
@@ -40,14 +50,16 @@ vector<string> tokenization(string equation) {
     equation.erase(remove(equation.begin(), equation.end(), ' '), equation.end());
     string numbers = "1234567890.";
     string operators = "!()+-*/^";
+    string var_symb = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
     stringstream num;
+    bool var = false;
     vector<string> tokens;
     for (int i = 0; i < equation.length(); i++) {
         if (numbers.find(equation[i]) != string::npos) {
             if (equation[i] == '.') {
                 if (num.str().length() != 0) num << equation[i];
                 else {
-                    cerr << "Error in the input at symbol " << i << "!";
+                    cout << "Error in the input at symbol " << i << "!";
                     exit(0);
                 }
             }
@@ -55,12 +67,26 @@ vector<string> tokenization(string equation) {
         }
         else if (operators.find(equation[i]) != string::npos) {
             if ((i == 0 && equation[i]!='(') || (i>0 && string("!+-*/^").find(equation[i - 1]) != string::npos && string("!+-*/^").find(equation[i]) != string::npos)) {
-                cerr << "Error in the input at symbol " << i << "!";
+                cout << "Error in the input at symbol " << i << "!";
                 exit(0);
             }
             if (num.str().length() != 0) {
-                tokens.push_back(num.str());
-                num.str("");
+                if (var) {
+                    if (variables.find(num.str()) != variables.end()) {
+                        //tokens.push_back(num.str());
+                        tokens.push_back(variables[num.str()]);
+                        num.str("");
+                        var = false;
+                    }
+                    else {
+                        cout << "Error unknown variable";
+                        exit(0);
+                    }
+                }
+                else {
+                    tokens.push_back(num.str());
+                    num.str("");
+                }
             }
             tokens.push_back(string{ equation[i] });
         }
@@ -81,6 +107,10 @@ vector<string> tokenization(string equation) {
             if (equation[i + 1] == 'a' && equation[i + 2] == 'x') tokens.push_back(to_string(max(num1, num2)));
             else if (equation[i + 1] == 'i' && equation[i + 2] == 'n') tokens.push_back(to_string(min(num1, num2)));
             i = i + s.find('(') + last_par_pos;
+        }
+        else if (var_symb.find(equation[i]) != string::npos) {
+            var = true;
+            num << equation[i];
         }
     }
     if (num.str().length() != 0) {

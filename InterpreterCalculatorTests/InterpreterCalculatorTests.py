@@ -47,6 +47,14 @@ def test_calculator():
          {
              "input": "2*m ax ( min(3*5,6),  4+3)+10\n",
              "expected_output": "result = 24"
+         },
+         {
+             "input": "var a = 5\n6+a-2\n",
+             "expected_output": "result = 9"
+         },
+         {
+             "input": "var a = 5\nvar b = 2\na - b * 2\n",
+             "expected_output": "result = 1"
          }
     ]
 
