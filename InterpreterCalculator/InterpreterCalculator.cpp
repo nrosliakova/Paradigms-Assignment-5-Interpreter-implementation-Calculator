@@ -18,21 +18,22 @@ int main()
 {
     string equation;
     getline(cin, equation);
-    vector<string> tokens = tokenization(equation);
-    cout << "Tokens: ";
-    for (int i = 0; i < tokens.size(); i++)
-        cout << tokens[i] << ", ";
-    cout << endl;
+    cout << "result = " << solve(equation);
+    //vector<string> tokens = tokenization(equation);
+    //cout << "Tokens: ";
+    //for (int i = 0; i < tokens.size(); i++)
+    //    cout << tokens[i] << ", ";
+    //cout << endl;
 
-    cout << "Postfix: ";
-    queue<string> operands = convert_to_postfix(tokens);
-    queue<string> operands_print(operands);
-    for (int i = 0; i < operands.size(); i++) {
-        cout << operands_print.front() << " ";
-        operands_print.pop();
-    }
-    cout << endl;
-    cout << "result = " << calculate(operands);
+    //cout << "Postfix: ";
+    //queue<string> operands = convert_to_postfix(tokens);
+    //queue<string> operands_print(operands);
+    //for (int i = 0; i < operands.size(); i++) {
+    //    cout << operands_print.front() << " ";
+    //    operands_print.pop();
+    //}
+    //cout << endl;
+    //cout << "result = " << calculate(operands);
 }
 
 vector<string> tokenization(string equation) {
