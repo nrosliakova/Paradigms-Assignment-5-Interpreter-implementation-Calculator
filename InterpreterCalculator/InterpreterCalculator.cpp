@@ -11,8 +11,8 @@ using namespace std;
 vector<string> tokenization(string equation);
 queue<string> convert_to_postfix(vector<string> tokens);
 double calculate(queue<string> operands);
+vector<string> get_parameters(string s, int& last_par_pos);
 auto solve = [=](string equation) {return calculate(convert_to_postfix(tokenization(equation)));};
-vector<string> get_parameters(string s);
 
 int main()
 {
@@ -53,7 +53,7 @@ vector<string> tokenization(string equation) {
             else num << equation[i];
         }
         else if (operators.find(equation[i]) != string::npos) {
-            if (i == 0 || (string("!+-*/^").find(equation[i - 1]) != string::npos && string("!+-*/^").find(equation[i]) != string::npos)) {
+            if ((i == 0 && equation[i]!='(') || (i>0 && string("!+-*/^").find(equation[i - 1]) != string::npos && string("!+-*/^").find(equation[i]) != string::npos)) {
                 cerr << "Error in the input at symbol " << i << "!";
                 exit(0);
             }
@@ -69,8 +69,8 @@ vector<string> tokenization(string equation) {
                 exit(0);
             }
             string s = equation.substr(i);
-            string parameters_str = s.substr(s.find('(') + 1, s.find(')') - s.find('(') - 1);
-            vector<string> parameters = get_parameters(parameters_str);
+            int last_par_pos = 0;
+            vector<string> parameters = get_parameters(s.substr(s.find('(')), last_par_pos);
             if (parameters.size() != 2) {
                 cout << "Error in func min/max parameters";
                 exit(0);
@@ -79,7 +79,7 @@ vector<string> tokenization(string equation) {
             double num2 = solve(parameters[1]);
             if (equation[i + 1] == 'a' && equation[i + 2] == 'x') tokens.push_back(to_string(max(num1, num2)));
             else if (equation[i + 1] == 'i' && equation[i + 2] == 'n') tokens.push_back(to_string(min(num1, num2)));
-            i += s.find(')');
+            i = i + s.find('(') + last_par_pos;
         }
     }
     if (num.str().length() != 0) {
@@ -169,13 +169,40 @@ double calculate(queue<string> operands) {
     }
     return stod(calculation_stack.top());
 }
-vector<string> get_parameters(string s) {
+vector<string> get_parameters(string s, int& last_par_pos) {
     vector<string> parameters;
-    stringstream ss(s);
-    while (ss.good()) {
-        string param;
-        getline(ss, param, ',');
-        parameters.push_back(param);
+    stringstream ss;
+    int level = 1;
+    bool all_closed = false;
+    bool cur_closed = true;
+    int i = 1;
+    while (!all_closed) {
+        if (i >= s.length()) {
+            cout << "closed parenthesis was not found.";
+            exit(0);
+        }
+        char c = s[i];
+        if (c == '(') {
+            cur_closed = false;
+            level++;
+        }
+        else if (c == ')') {
+            cur_closed = true;
+            level--;
+        }
+        else if (c == ',' && cur_closed) {
+            parameters.push_back(ss.str());
+            ss.str("");
+            i++;
+            continue;
+        }
+        all_closed = (level == 0);
+        if (all_closed) {
+            parameters.push_back(ss.str());
+            last_par_pos = i;
+        }
+        ss << c;
+        i++;
     }
     return parameters;
 }
