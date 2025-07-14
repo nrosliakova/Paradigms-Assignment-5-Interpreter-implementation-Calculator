@@ -11,12 +11,13 @@ using namespace std;
 vector<string> tokenization(string equation);
 queue<string> convert_to_postfix(vector<string> tokens);
 double calculate(queue<string> operands);
+auto solve = [=](string equation) {return calculate(convert_to_postfix(tokenization(equation)));};
+vector<string> get_parameters(string s);
 
 int main()
 {
     string equation;
     getline(cin, equation);
-
     vector<string> tokens = tokenization(equation);
     cout << "Tokens: ";
     for (int i = 0; i < tokens.size(); i++)
@@ -35,6 +36,7 @@ int main()
 }
 
 vector<string> tokenization(string equation) {
+    equation.erase(remove(equation.begin(), equation.end(), ' '), equation.end());
     string numbers = "1234567890.";
     string operators = "!()+-*/^";
     stringstream num;
@@ -46,12 +48,12 @@ vector<string> tokenization(string equation) {
                 else {
                     cerr << "Error in the input at symbol " << i << "!";
                     exit(0);
-        }
+                }
             }
             else num << equation[i];
         }
         else if (operators.find(equation[i]) != string::npos) {
-            if (i == 0 || operators.find(equation[i - 1]) != string::npos) {
+            if (i == 0 || (string("!+-*/^").find(equation[i - 1]) != string::npos && string("!+-*/^").find(equation[i]) != string::npos)) {
                 cerr << "Error in the input at symbol " << i << "!";
                 exit(0);
             }
@@ -61,10 +63,23 @@ vector<string> tokenization(string equation) {
             }
             tokens.push_back(string{ equation[i] });
         }
-        else if (equation[i] == ' ') {
-                tokens.push_back(num.str());
-                num.str("");
+        else if (equation[i] == 'm') {
+            if (!((equation[i + 1] == 'a' && equation[i + 2] == 'x') || (equation[i + 1] == 'i' && equation[i + 2] == 'n'))) {
+                cout << "Input error, index: " << i;
+                exit(0);
             }
+            string s = equation.substr(i);
+            string parameters_str = s.substr(s.find('(') + 1, s.find(')') - s.find('(') - 1);
+            vector<string> parameters = get_parameters(parameters_str);
+            if (parameters.size() != 2) {
+                cout << "Error in func min/max parameters";
+                exit(0);
+            }
+            double num1 = solve(parameters[0]);
+            double num2 = solve(parameters[1]);
+            if (equation[i + 1] == 'a' && equation[i + 2] == 'x') tokens.push_back(to_string(max(num1, num2)));
+            else if (equation[i + 1] == 'i' && equation[i + 2] == 'n') tokens.push_back(to_string(min(num1, num2)));
+            i += s.find(')');
         }
     }
     if (num.str().length() != 0) {
@@ -115,6 +130,7 @@ queue<string> convert_to_postfix(vector<string> tokens) {
 }
 double calculate(queue<string> operands) {
     stack<string> calculation_stack;
+    if (operands.size() == 1) return stod(operands.front());
     while (operands.size() > 0) {
         while (string("!()+-*/^").find(operands.front()) == string::npos) {
             calculation_stack.push(operands.front());
@@ -152,4 +168,14 @@ double calculate(queue<string> operands) {
 
     }
     return stod(calculation_stack.top());
+}
+vector<string> get_parameters(string s) {
+    vector<string> parameters;
+    stringstream ss(s);
+    while (ss.good()) {
+        string param;
+        getline(ss, param, ',');
+        parameters.push_back(param);
+    }
+    return parameters;
 }
